@@ -16,7 +16,7 @@ Read if:
 
 ## What is API Versioning and why should I care ?
 
-Let’s say you are the owner of a very sophisticated API allowing your clients to post a username on your /users route and receive all the information you have about this username.
+Let’s say you are the owner of a very sophisticated API allowing your clients to post a username on your `/users` route and receive all the information you have about this username.
 
 The request and could look like
 
