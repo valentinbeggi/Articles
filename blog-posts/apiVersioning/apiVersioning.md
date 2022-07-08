@@ -14,18 +14,18 @@ Read if:
 
 # Introduction
 
-## What is API Versioning and why should I care ?
+## What is API Versioning and why should I care?
 
-Let’s say you are the owner of a very sophisticated API allowing your clients to post a username on your /users route and receive all the information you have about this username.
+Let’s say you are the owner of a very sophisticated API allowing your clients to post a username on your `/users` route and receive all the information you have about this username.
 
-The request and could look like
+The request might look like this:
 
 ```json
 POST /users
 body: {"username": "awesomeUser123", "age": 25, "job": "software engineer"}
 ```
 
-and the response 
+and the response:
 
 ```json
 {
@@ -34,17 +34,17 @@ and the response
 }
 ```
 
-You now need the user's company and refactored the input this way:
+You now need the user's company and refactor the input this way:
 ```json
 {"age": 25, "job": { "title": "software engineer", "company": "Stroupe" }}
 ```
 
-It would be a bad practice to update your code and publish it right away because this would immediately break all the services relying on your API. A better and nicer solution would be to upgrade your API and communicating about it the right way 📚.
+It would be a bad practice to update your code and deploy it right away because this would immediately break all the services relying on your API. A better and nicer solution would be to upgrade your API and communicate about the change the right way 📚.
 
 
 >🦸 API Versioning allows you to make breaking changes and keep your clients happy.
 
-## How do clients access versioned APIs ?
+## How do clients access versioned APIs?
 
 >💡 We will use date-based version names like “2022-01-01” (implementation date) instead of traditional v1, v2...
 >It is easier to track, to use, and to document.
@@ -53,7 +53,7 @@ There are 2 main ways your API consumers can query a specific version of your AP
 
 State of the art players, like [Stripe](https://stripe.com/blog/api-versioning), chose to provide header based API versioning. Indeed, the paths of your API will be kept as simple as possible. It's sexier to call a `GET /users` than a `GET /users/2022-01-01` right?
 
-We will detail two ways of implementing a header based API Versioning system using AWS API Gateway and Lambda.
+We will detail two implementations of a header based API Versioning system using AWS API Gateway and Lambda.
 
 # Solutions
 
@@ -79,9 +79,9 @@ There are 6 steps.
 
 ![api gateway rest api flow](./assets/Capture_decran_2022-06-21_a_18.17.10.png)
 
-1️⃣ API Gateway receives the request
+1️⃣ API Gateway receives the request.
 
-2️⃣ It is passed to the Method Request, where we can perform input validation, headers validation, provide the route with authorizers..
+2️⃣ It is passed to the Method Request, where we can perform input validation, headers validation, provide the route with authorizers.
 
 3️⃣ Data is passed to Integration Request. We specify the hanler (a Lambda Function, another AWS Service, another HTTP endpoint …) and manipulate the body / headers that will be passed down using [VTL](https://velocity.apache.org/engine/2.0/vtl-reference.html).
 
@@ -130,7 +130,7 @@ Directly integrates with other AWS Services APIs, including Lambda.
 >When integrating with AWS Service Lambda, you can map the status code you **received from your call to the Lambda Service** to a custom status code of your choice.
 
 
-Now let’s build a header-based versioning system !
+Now let’s build a header-based versioning system!
 
 # Method 1: HTTP Proxy Integration
 
@@ -145,7 +145,7 @@ I will define the steps to configure the first API route.
 ![integration request example](./assets/Capture_dcran_2022-02-21__23.09.31.png)
 
 - Use HTTP Integration type.
-- Optionally, use a mapping template to pass down the apiKey to the second API route and set a default version if no Version header is provided.
+- Optionally, use a mapping template to pass down the apiKey to the second API route and set a default version if no version header is provided.
 
 ```tsx
 #set($version = $method.request.header.Version)
@@ -165,8 +165,8 @@ $input.json("$")
 
 The Integration Response input is the status code API Gateway received from its HTTP call to our sub API Gateway route (potentially a 403 if it was not found).
 
-We will use mapping template to add logic (using VTL) to the response.
-A very useful method you will need is `$context.responseOverride.status`
+We will use mapping template to add logic (using Velocity Template Language, VTL) to the response.
+ You will need a very useful method: `$context.responseOverride.status`
 
 It allows you to override the final status code.
 
@@ -175,7 +175,7 @@ Now define each possible method response status (i.e. the status codes you want 
 - By default, map the HTTP response to a 500. 
 Use a mapping template to return a `{message: “Internal Server Error”}` object.
 This way, any untackled behaviour ends up in a 500.
-- Next, we will take care of the 403 special case. In the case where an unknown Version is passed by the client, the HTTP Proxy will try to invoke an undefined route, which will result in an API Gateway 403 response.
+- Next, we will take care of the 403 special case. In the case where an unknown version is passed by the client, the HTTP Proxy will try to invoke an undefined route, which will result in an API Gateway 403 response.
 I chose to return a custom error message telling the client that the requested version was not found.
 
 ```java
@@ -193,7 +193,7 @@ I chose to return a custom error message telling the client that the requested v
 
 - Finally map all relevant status codes of your API to themselves. They will be passed as is.
 
-It should look like that : 
+It should look like that:
 
 ![integration response status code mapping](./assets/Capture_dcran_2022-02-21__23.12.35.png)
 
@@ -201,7 +201,7 @@ It should look like that :
 
  ---
 
-**Summing it up !**
+**Summing it up!**
 
 ✅ Configuration remains quite simple <br>
 
@@ -220,13 +220,13 @@ You have to lambdas, `postUser20220101` and `postUser20220305`.
 
 The goal is to have API Gateway directly call one lambda or the other based on the Version header.
 
-It looks like this :
+It looks like this:
 
 ![lambda custom integration schema](./assets/Capture_dcran_2022-02-21__21.28.29.png)
 
 ![api gateway flow pattern](./assets/Capture_dcran_2022-02-21__21.42.06.png)
 
-Let’s detail the Integration Request and Integration Response parts
+Let’s detail the Integration Request and Integration Response parts.
 
 ## Integration Request
 
@@ -245,7 +245,7 @@ Now define each possible method response status and map them to the Lambda Servi
 Indeed if Lambda Service returns a 500 we just want to pass it through.
 - Then define a mapping from Lambda Service 404 to a 400.
 Using a mapping template, check the payload you received from Lambda Service. If it mentions Lambda not found then override the response message with your custom Version not found message. To do that, just return in VTL an object with the information you want to provide your client with.
-For example :
+For example:
     
     ```tsx
     {"message": "The API version you requested: 
@@ -258,11 +258,11 @@ For example :
 
 - That’s it, you kind of reimplemented the Lambda Proxy integration for the sake of versioning and client satisfaction 🎊.
 
-We’re done, now fine-tune your VTL to make your version error message more explicit, by adding a list of supported versions for example !
+We’re done, now fine-tune your VTL to make your version error message more explicit, by adding a list of supported versions for example!
 
 ---
 
-**Summing it up !**
+**Summing it up!**
 
 ✅ Implies no additional cost <br>
 
@@ -277,7 +277,7 @@ We’ve learned two ways to define a header based API versioning system using AW
 ---
 
 I purposefully kept the implementation details light and simplified them the more that I could.
-If you chose to implement one of these solutions but find it hard to do so, feel free ton contact me on [Twitter](https://twitter.com/valentinbeggi) or by leaving a comment below, I will be more than ✨API to help✨ !
+If you chose to implement one of these solutions but find it hard to do so, feel free ton contact me on [Twitter](https://twitter.com/valentinbeggi) or by leaving a comment below, I will be more than ✨API to help✨!
 
 ---
 
