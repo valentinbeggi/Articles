@@ -46,12 +46,12 @@ It would be a bad practice to update your code and publish it right away because
 
 ## How do clients access versioned APIs ?
 
->💡 We will use date-based version names like “2022-01-01” instead of traditional v1, v2..
+>💡 We will use date-based version names like “2022-01-01” (implementation date) instead of traditional v1, v2...
 >It is easier to track, to use, and to document.
 
-There are 2 main ways your API consumers can query a specific version of your API, either with a path parameter, by calling `POST /users/2022-01-01`, or by using a dedicated HTTP header.
+There are 2 main ways your API consumers can query a specific version of your API, either with a path parameter, by calling `POST /2022-01-01/users`, or by using a dedicated HTTP header.
 
-State of the art players, like [Stripe](https://stripe.com/blog/api-versioning), chose to provide header based API versioning. Indeed, the paths of your API will be kept as simple as possible. It's sexier to call a `GET my-api/users` than a `GET my-api/users/2022-01-01` right?
+State of the art players, like [Stripe](https://stripe.com/blog/api-versioning), chose to provide header based API versioning. Indeed, the paths of your API will be kept as simple as possible. It's sexier to call a `GET /users` than a `GET /users/2022-01-01` right?
 
 We will detail two ways of implementing a header based API Versioning system using AWS API Gateway and Lambda.
 
