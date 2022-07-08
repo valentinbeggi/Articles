@@ -1,7 +1,7 @@
 ---
 published: false
 title: 'The Serverless API Versioning System you wish you had ⚡'
-cover_image:
+cover_image: ./assets/Capture d’écran 2022-07-08 à 17.32.25.png
 description: 'Learn how to implement a blazing fast Serverless API Versioning system'
 tags: serverless, api, aws, lambda
 series:
